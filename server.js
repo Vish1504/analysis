@@ -1,15 +1,13 @@
 const express = require('express');
 const app = express();
-const { rsaAnalysis } = require('./results');
-const { mcelieceAnalysis } = require('./results');
-const { kyberAnalysis } = require('./results');
+const { rsaAnalysis, mcelieceAnalysis, kyberAnalysis } = require('./results');
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
-
 
 app.post('/analyse', function (req, res) {
     const message = req.body.message;
@@ -19,27 +17,47 @@ app.post('/analyse', function (req, res) {
     const kyberResult = kyberAnalysis(message);
 
     res.send(`
-            <h1>RSA</h1>
-            <p>Decrypted message: ${rsaResult.aes_decrypted}</p>
-            <p>RSA key generation time: ${rsaResult.rsaRanTime}ms</p>
-            <p>RSA encryption time: ${rsaResult.rsaEncTime}ms</p>
-            <p>RSA decryption time: ${rsaResult.rsaDecTime}ms</p>
-    
-            <h1>McEliece</h1>
-            <p>Decrypted message: ${mcelieceResult.aesDecrypted}</p>
-            <p>McEliece key generation time: ${mcelieceResult.keygenTime}ms</p>
-            <p>McEliece encryption time: ${mcelieceResult.encryptionTime}ms</p>
-            <p>McEliece decryption time: ${mcelieceResult.decryptionTime}ms</p>
-    
-            <h1>Kyber</h1>
-            <p>Decrypted message: ${kyberResult.decrypted}</p>
-            <p>Kyber key generation time: ${kyberResult.keygenTime}ms</p>
-            <p>Kyber encryption time: ${kyberResult.encryptionTime}ms</p>
-            <p>Kyber decryption time: ${kyberResult.decryptionTime}ms</p>
-        `);
+        <table>
+            <tr>
+                <th>Parameters</th>
+                <th>RSA</th>
+                <th>McEliece</th>
+                <th>Kyber</th>
+            </tr>
+            <tr>
+                <th>Decrypted message</th>
+                <td>${rsaResult.aes_decrypted}</td>
+                <td>${mcelieceResult.aesDecrypted}</td>
+                <td>${kyberResult.decrypted}</td>
+            </tr>
+            <tr>
+                <th>KeyGen time</th>
+                <td>${rsaResult.rsaRanTime} ms</td>
+                <td>${mcelieceResult.keygenTime} ms</td>
+                <td>${kyberResult.keygenTime} ms</td>
+            </tr>
+            <tr>
+                <th>Encryption time</th>
+                <td>${rsaResult.rsaEncTime} ms</td>
+                <td>${mcelieceResult.encryptionTime} ms</td>
+                <td>${kyberResult.encryptionTime} ms</td>
+            </tr>
+            <tr>
+                <th>Decryption time</th>
+                <td>${rsaResult.rsaDecTime} ms</td>
+                <td>${mcelieceResult.decryptionTime} ms</td>
+                <td>${kyberResult.decryptionTime} ms</td>
+            </tr>
+            <tr>
+                <th>Memory consumed</th>
+                <td>${rsaResult.memoryConsumed} bytes</td>
+                <td>${mcelieceResult.memoryConsumed} bytes</td>
+                <td>${kyberResult.memoryConsumed} bytes</td>
+            </tr>
+        </table>
+    `);
+
 });
-
-
 
 const PORT = process.env.PORT || 8080;
 

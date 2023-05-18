@@ -1,12 +1,14 @@
+
 const rsaAnalysis = (message) => {
     const crypto = require('crypto');
-    let startTime = new Date();
+
+
     const encryptionKey = crypto.randomBytes(32);
     const iv = crypto.randomBytes(16);
-    let aesRanTime = new Date() - startTime;
 
+    const memoryUsageBefore = process.memoryUsage().heapUsed;
     // RSA KeyGen
-    startTime = new Date();
+    let startTime = new Date();
     const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
         modulusLength: 2048,
     });
@@ -21,11 +23,10 @@ const rsaAnalysis = (message) => {
     let rsaRanTime = new Date() - startTime;
 
     // AES Encryption
-    startTime = new Date();
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(encryptionKey), iv);
     let aes_encrypted = cipher.update(message, 'utf8', 'base64');
     aes_encrypted += cipher.final('base64');
-    let aesEncTime = new Date() - startTime;
+
 
     // RSA Encryption of AES encrypted text
     startTime = new Date();
@@ -53,11 +54,10 @@ const rsaAnalysis = (message) => {
     let rsaDecTime = new Date() - startTime;
 
     // AES Decryption of RSA Decrypted text
-    startTime = new Date();
+
     const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(decryptedData), iv);
     let aes_decrypted = decipher.update(aes_encrypted, 'base64', 'utf8');
     aes_decrypted += decipher.final('utf8');
-    let aesDecTime = new Date() - startTime;
 
     // Log the AES decrypted text and the time taken by each step
     // console.log('\nDecrypted message: ' + aes_decrypted);
@@ -66,8 +66,11 @@ const rsaAnalysis = (message) => {
 
     // console.log(`RSA encryption time: ${rsaEncTime}ms`);
     // console.log(`RSA decryption time: ${rsaDecTime}ms`);
+    const memoryUsageAfter = process.memoryUsage().heapUsed;
+    const memoryConsumed = memoryUsageAfter - memoryUsageBefore;
 
-    return { aes_decrypted, aesRanTime, rsaRanTime, aesEncTime, rsaEncTime, rsaDecTime, aesDecTime };
+
+    return { aes_decrypted, rsaRanTime, rsaEncTime, rsaDecTime, memoryConsumed };
 };
 
 
@@ -76,7 +79,7 @@ const mcelieceAnalysis = (message) => {
     var mceliece = require("./mceliece");
 
     const crypto = require('crypto');
-
+    const memoryUsageBefore = process.memoryUsage().heapUsed;
     // Generate a 32-byte AES key
     const encryptionKey = crypto.randomBytes(32);
     const iv = crypto.randomBytes(16);
@@ -126,17 +129,22 @@ const mcelieceAnalysis = (message) => {
     const decryptionTime = decryptionEndTime - decryptionStartTime;
 
 
-    console.log('Mceliece decrypted message: ' + aesDecrypted);
-    console.log('keygen time: ' + keygenTime + 'ms');
-    console.log('encryption time: ' + encryptionTime + 'ms');
-    console.log('decryption time: ' + decryptionTime + 'ms');
-
-    return { aesDecrypted, keygenTime, encryptionTime, decryptionTime };
+    // console.log('Mceliece decrypted message: ' + aesDecrypted);
+    // console.log('keygen time: ' + keygenTime + 'ms');
+    // console.log('encryption time: ' + encryptionTime + 'ms');
+    // console.log('decryption time: ' + decryptionTime + 'ms');
+    const memoryUsageAfter = process.memoryUsage().heapUsed;
+    const memoryConsumed = memoryUsageAfter - memoryUsageBefore;
+    return {
+        aesDecrypted, keygenTime, encryptionTime, decryptionTime, memoryConsumed
+    };
 };
 
 const kyberAnalysis = (message) => {
     const crypto = require('crypto');
     const kyber = require('crystals-kyber');
+
+    const memoryUsageBefore = process.memoryUsage().heapUsed;
 
     // Start measuring keygen time
     const keygenStartTime = Date.now();
@@ -153,7 +161,7 @@ const kyberAnalysis = (message) => {
     // Start measuring encryption time
     const encryptionStartTime = Date.now();
 
-    // To generate a random 256 bit symmetric key (ss) and its encapsulation (c)
+    // To generate a random 256-bit symmetric key (ss) and its encapsulation (c)
     const c_ss = kyber.Encrypt768(pk);
     const c = c_ss[0];
     const ss1 = c_ss[1];
@@ -187,13 +195,11 @@ const kyberAnalysis = (message) => {
     const decryptionEndTime = Date.now();
     const decryptionTime = decryptionEndTime - decryptionStartTime;
 
-    console.log('decrypted message: ' + decrypted);
-    console.log('keygen time: ' + keygenTime + 'ms');
-    console.log('encryption time: ' + encryptionTime + 'ms');
-    console.log('decryption time: ' + decryptionTime + 'ms');
+    const memoryUsageAfter = process.memoryUsage().heapUsed;
+    const memoryConsumed = Math.abs(memoryUsageAfter - memoryUsageBefore);
 
-    return { decrypted, keygenTime, encryptionTime, decryptionTime };
-}
+    return { decrypted, keygenTime, encryptionTime, decryptionTime, memoryConsumed };
+};
+
 
 module.exports = { rsaAnalysis, mcelieceAnalysis, kyberAnalysis };
-

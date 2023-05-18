@@ -8,5 +8,8 @@
     "start": "node server.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "memory-stats": "^1.0.2"
+  }
 }
